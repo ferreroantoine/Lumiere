@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import type { CustomSource, TitleDetails } from '@lumiere/shared';
-import { LOADIX_SEARCH_URL, customSourceUrl, findOneFichierLink, hasMarkers } from './links';
+import {
+  LOADIX_SEARCH_URL,
+  customSourceUrl,
+  findOneFichierLink,
+  hasMarkers,
+  isLoadixSource,
+} from './links';
 
 const title = {
   kind: 'series',
@@ -43,5 +49,17 @@ describe('sources personnalisées', () => {
       'https://1fichier.com/?abcde12345&af=1',
     );
     expect(findOneFichierLink('https://loadix.fun/media/123')).toBeNull();
+  });
+
+  it('reconnaît loadix.fun, dont les versions sont listées dans Lumière', () => {
+    const source = (searchUrl: string): CustomSource => ({
+      id: 'c',
+      name: 'Site',
+      searchUrl,
+      host: '1fichier',
+    });
+    expect(isLoadixSource(source(LOADIX_SEARCH_URL))).toBe(true);
+    expect(isLoadixSource(source('https://www.loadix.fun/'))).toBe(true);
+    expect(isLoadixSource(source('https://notloadix.fun/?q={titre}'))).toBe(false);
   });
 });

@@ -29,6 +29,9 @@ const EnvSchema = z.object({
   // Clé d'API d'un compte 1fichier premium (liens des sources personnalisées).
   ONEFICHIER_API_KEY: optionalString,
   ONEFICHIER_API_URL: z.url().default('https://api.1fichier.com/v1'),
+  // loadix.fun : son API publique (liste des versions) et son site (pages des titres).
+  LOADIX_API_URL: z.url().default('https://api.loadix.fun'),
+  LOADIX_SITE_URL: z.url().default('https://loadix.fun'),
   FFMPEG_PATH: z.string().default('ffmpeg'),
   FFPROBE_PATH: z.string().default('ffprobe'),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),
@@ -60,6 +63,10 @@ export interface AppConfig {
   oneFichier: {
     envApiKey: string | null;
     apiBaseUrl: string;
+  };
+  loadix: {
+    apiBaseUrl: string;
+    siteUrl: string;
   };
   ffmpegPath: string;
   ffprobePath: string;
@@ -141,6 +148,10 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     oneFichier: {
       envApiKey: e.ONEFICHIER_API_KEY ?? null,
       apiBaseUrl: e.ONEFICHIER_API_URL.replace(/\/+$/, ''),
+    },
+    loadix: {
+      apiBaseUrl: e.LOADIX_API_URL.replace(/\/+$/, ''),
+      siteUrl: e.LOADIX_SITE_URL.replace(/\/+$/, ''),
     },
     ffmpegPath: e.FFMPEG_PATH,
     ffprobePath: e.FFPROBE_PATH,

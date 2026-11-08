@@ -30,6 +30,7 @@ import { PlaybackSessions } from './modules/playback/sessions';
 import { SubtitleSyncService } from './modules/playback/subtitle-sync.service';
 import { SettingsService } from './modules/settings/settings.service';
 import { SourceClient } from './modules/source/source-client';
+import { LoadixClient } from './modules/source/loadix/loadix.client';
 import { OneFichierFiles } from './modules/source/onefichier/onefichier-files';
 import { OneFichierClient } from './modules/source/onefichier/onefichier.client';
 import { SourceRelay } from './modules/source/source-relay';
@@ -47,6 +48,7 @@ export interface Container {
   source: SourceClient;
   oneFichier: OneFichierClient;
   oneFichierFiles: OneFichierFiles;
+  loadix: LoadixClient;
   archives: ArchiveEntries;
   linkImports: LinkImports;
   relay: SourceRelay;
@@ -81,6 +83,7 @@ export function createContainer(config: AppConfig, logger: Logger): Container {
     apiKey: () => settings.getOneFichierApiKey(),
   });
   const oneFichierFiles = new OneFichierFiles(db, oneFichier, logger.child({ module: '1fichier' }));
+  const loadix = new LoadixClient(config.loadix);
   const archives = new ArchiveEntries(db, logger.child({ module: 'archives' }));
   const source = new SourceClient(addons, logger.child({ module: 'source' }), {
     oneFichier: oneFichierFiles,
@@ -187,6 +190,7 @@ export function createContainer(config: AppConfig, logger: Logger): Container {
     source,
     oneFichier,
     oneFichierFiles,
+    loadix,
     archives,
     linkImports,
     relay,

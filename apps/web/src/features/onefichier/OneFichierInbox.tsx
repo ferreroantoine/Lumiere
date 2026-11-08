@@ -151,11 +151,11 @@ function WaitForLink({
 
   return (
     <div className="flex flex-col gap-5 pb-4">
-      {search && (
+      {search?.release ? (
         <ol className="flex flex-col gap-3">
           <Step number={1}>
             <span className="font-semibold text-white">{search.source}</span> s’est ouvert dans un
-            nouvel onglet, sur la recherche de « {search.target} ».{' '}
+            nouvel onglet, sur la page de « {search.target} ».{' '}
             <a
               href={search.url}
               target="_blank"
@@ -167,17 +167,44 @@ function WaitForLink({
             </a>
           </Step>
           <Step number={2}>
-            Passez la vérification anti-robot du site, puis choisissez la version
-            {search.season !== null
-              ? ` de la saison ${search.season}. Prenez la saison complète si elle est proposée (archive .zip) : Lumière range chaque épisode.`
-              : '.'}
+            Repérez la version <span className="font-medium text-white">{search.release}</span> et
+            cliquez sur « Révéler » (connexion à votre compte et vérification anti-robot si le site
+            les demande).
           </Step>
           <Step number={3}>
-            Copiez le lien 1fichier : bouton « Copier » du site, ou clic droit sur le lien puis «
-            Copier l’adresse du lien ».
+            Copiez le lien 1fichier affiché, ou cliquez sur le favori « Envoyer à Lumière ».
           </Step>
           <Step number={4}>Revenez ici et collez-le.</Step>
         </ol>
+      ) : (
+        search && (
+          <ol className="flex flex-col gap-3">
+            <Step number={1}>
+              <span className="font-semibold text-white">{search.source}</span> s’est ouvert dans un
+              nouvel onglet, sur la recherche de « {search.target} ».{' '}
+              <a
+                href={search.url}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1 font-medium text-brand-300 underline-offset-2 hover:underline"
+              >
+                Rouvrir
+                <ExternalLink className="size-3" />
+              </a>
+            </Step>
+            <Step number={2}>
+              Passez la vérification anti-robot du site, puis choisissez la version
+              {search.season !== null
+                ? ` de la saison ${search.season}. Prenez la saison complète si elle est proposée (archive .zip) : Lumière range chaque épisode.`
+                : '.'}
+            </Step>
+            <Step number={3}>
+              Copiez le lien 1fichier : bouton « Copier » du site, ou clic droit sur le lien puis «
+              Copier l’adresse du lien ».
+            </Step>
+            <Step number={4}>Revenez ici et collez-le.</Step>
+          </ol>
+        )
       )}
 
       <div

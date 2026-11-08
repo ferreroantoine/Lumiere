@@ -134,6 +134,31 @@ export interface EpisodeFiles {
   notice: string | null;
 }
 
+/** Version 1fichier d'un titre sur loadix.fun (lien à révéler sur le site). */
+export interface LoadixRelease {
+  id: string;
+  /** Saison complète, épisode(s), ou tout le titre (film, intégrale). */
+  scope: 'title' | 'season' | 'episode';
+  season: number | null;
+  /** Épisode, ou plage d'épisodes (« 1-6 »). */
+  episodes: string | null;
+  quality: string | null;
+  language: string | null;
+  size: number | null;
+  group: string | null;
+  name: string | null;
+  fileCount: number;
+  addedAt: string | null;
+  /** Page loadix du titre, placée sur cette version. */
+  url: string;
+}
+
+export interface LoadixReleases {
+  /** Page loadix du titre (null : titre absent de loadix). */
+  pageUrl: string | null;
+  releases: LoadixRelease[];
+}
+
 export interface CatalogQuery {
   kind?: TitleKind;
   q?: string;
