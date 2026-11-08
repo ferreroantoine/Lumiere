@@ -467,6 +467,32 @@ des lecteurs vidéo ordinaires, pas pour des navigateurs : pas de vérification 
 | Messages d'erreur       | Limite de liens, limite de requêtes, extension injoignable ou manifeste invalide traduits en français, préfixés du nom de l'extension quand il y en a plusieurs                           | Dire _quelle_ extension refuse et _pourquoi_, plutôt qu'un « 403 » brut.                                                                                                                                                                                                |
 | Diagnostic              | `npm run diagnose [-- --extension=URL…] [--film=tt…] [--serie=tt…:S:E]`                                                                                                                   | Teste depuis la machine de l'utilisateur, extension par extension, le manifeste, les liens d'**un seul** film (pour ménager la réserve) et la lecture des premiers octets du premier lien. Indispensable puisque l'environnement de développement n'atteint pas 111477. |
 
+### loadix.fun : versions listées, lien révélé par l'utilisateur
+
+Un test avec [Scrapling](https://github.com/D4Vinci/Scrapling) (navigateur piloté et maquillé,
+`tools/scrapling-test/`) a montré trois choses :
+
+- le « blocage » de départ n'était pas l'anti-robot : le DNS de la box répond `127.0.0.1` pour
+  loadix.fun (blocage par le fournisseur d'accès). Avec un DNS chiffré, pages et API répondent
+  sans aucun défi Cloudflare ;
+- le site est une application React servie par une **API JSON publique**
+  (`api.loadix.fun`) : `api/media/search` renvoie les fiches avec leur identifiant TMDB, et
+  `api/media/{id}/links?provider=1fichier` leurs versions (qualité, langue, taille, saison ou
+  épisode), sans compte ni navigateur ;
+- le lien lui-même (`POST api/links/{id}/reveal`) exige un **compte connecté** et un **jeton
+  Cloudflare Turnstile** à chaque révélation. Le site l'annonce comme une protection contre le
+  scraping automatisé.
+
+| Élément          | Choix                                                                                                                                                         | Pourquoi                                                                                                                                                           |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Liste            | `GET /api/titles/:id/loadix?season=N` : fiche loadix retrouvée par identifiant TMDB (sinon titre et année à un an près), versions 1fichier lues page par page | Le choix de la version se fait dans Lumière, comme pour les extensions Stremio. API publique, sans limite de liens : la liste se charge à l'affichage de l'onglet. |
+| Série            | Versions de la saison affichée, saisons complètes d'abord, puis épisodes dans l'ordre ; intégrales incluses                                                   | Une saison complète (archive .zip) est rangée épisode par épisode par Lumière.                                                                                     |
+| Révélation       | Lien vers la page du titre placée sur la version (`#link-<id>`) ; l'utilisateur clique « Révéler » avec son compte, puis colle le lien ou utilise le favori   | Pas de contournement d'une protection posée exprès contre l'automatisation, pas de mot de passe stocké, pas de risque de bannissement du compte de l'utilisateur.  |
+| Pas de Scrapling | Rien de Python ni de navigateur piloté dans Lumière                                                                                                           | La liste n'en a pas besoin, et la révélation automatique est écartée.                                                                                              |
+
+Piste : le site délivre des **clés d'API** (`lxu_…`, permission `links:read`) aux comptes dont la
+demande est approuvée. Si elles donnent accès aux liens, la révélation pourra passer par elles.
+
 ### Validation
 
 Les extensions sont testées contre de faux services locaux : client et file d'épisodes

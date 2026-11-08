@@ -1,17 +1,23 @@
 import { ChevronDown, Download, ExternalLink, Globe, Loader2, Play, Puzzle } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router';
-import type { CustomSource, SeasonEntry, TitleDetails } from '@lumiere/shared';
+import type { CustomSource, LoadixRelease, SeasonEntry, TitleDetails } from '@lumiere/shared';
 import { errorMessage } from '../../api/client';
-import { useEnqueueTitle, useMovieVersions, useSettings } from '../../api/queries';
+import {
+  useEnqueueTitle,
+  useLoadixReleases,
+  useMovieVersions,
+  useSettings,
+} from '../../api/queries';
 import { ReleaseBadges } from '../../components/media/ReleaseBadges';
+import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 import { buttonClasses } from '../../components/ui/button-styles';
 import { Tabs } from '../../components/ui/Tabs';
 import { cn } from '../../lib/cn';
-import { formatBytes } from '../../lib/format';
+import { formatBytes, formatRelativeDate, plural } from '../../lib/format';
 import { playerUrl } from '../../lib/routes';
-import { customSourceUrl } from '../onefichier/links';
+import { customSourceUrl, isLoadixSource } from '../onefichier/links';
 import { openSourceSearch } from '../onefichier/open-dialog';
 import { rememberPendingTitle } from '../onefichier/pending-title';
 import { DownloadState, PlayButton } from './FileActions';
@@ -93,6 +99,8 @@ export function DownloadCard({ title, season }: { title: TitleDetails; season?: 
           </Link>
           .
         </p>
+      ) : site && isLoadixSource(site) ? (
+        <LoadixPanel title={title} season={season} site={site} />
       ) : site ? (
         <SitePanel title={title} season={season} site={site} />
       ) : title.kind === 'movie' ? (
@@ -145,13 +153,161 @@ function SitePanel({
             season: seasonNumber,
             source: site.name,
           });
-          openSourceSearch({ source: site.name, url, target, season: seasonNumber });
+          openSourceSearch({ source: site.name, url, target, season: seasonNumber, release: null });
         }}
       >
         <ExternalLink className="size-4" />
         {seasonNumber !== null
           ? `Chercher la saison ${seasonNumber} sur ${site.name}`
           : `Chercher sur ${site.name}`}
+      </a>
+    </div>
+  );
+}
+
+function scopeLabel(release: LoadixRelease): string | null {
+  if (release.scope === 'season') return 'Saison complète';
+  if (release.episodes === null) return null;
+  return release.episodes.includes('-')
+    ? `Épisodes ${release.episodes}`
+    : `Épisode ${release.episodes}`;
+}
+
+/** « Saison complète · WEB 1080p · MULTi VFF · 22,4 Go » : la version à repérer sur le site. */
+function describeRelease(release: LoadixRelease): string {
+  return [
+    scopeLabel(release),
+    release.quality,
+    release.language,
+    release.size ? formatBytes(release.size) : null,
+  ]
+    .filter(Boolean)
+    .join(' · ');
+}
+
+/**
+ * loadix.fun : ses versions 1fichier sont listées ici (API publique du site). Le lien se
+ * révèle sur le site, avec le compte de l'utilisateur, puis revient par collage ou par le favori.
+ */
+function LoadixPanel({
+  title,
+  season,
+  site,
+}: {
+  title: TitleDetails;
+  season?: SeasonEntry;
+  site: CustomSource;
+}) {
+  const seasonNumber = title.kind === 'series' ? (season?.number ?? null) : null;
+  const releases = useLoadixReleases(title.id, seasonNumber);
+  const target =
+    title.kind === 'movie' && title.year ? `${title.title} (${title.year})` : title.title;
+
+  if (releases.isPending) {
+    return (
+      <p className="flex items-center gap-2 text-sm text-zinc-400">
+        <Loader2 className="size-4 animate-spin" />
+        Recherche des versions sur {site.name}…
+      </p>
+    );
+  }
+  if (releases.isError || !releases.data.pageUrl) {
+    return (
+      <div className="flex flex-col gap-3">
+        <p className="text-sm text-zinc-400">
+          {releases.isError
+            ? errorMessage(releases.error)
+            : `« ${title.title} » n’a pas été trouvé sur ${site.name}.`}
+        </p>
+        <SitePanel title={title} season={season} site={site} />
+      </div>
+    );
+  }
+  const { pageUrl, releases: items } = releases.data;
+  return (
+    <div className="flex flex-col gap-3">
+      {items.length === 0 ? (
+        <p className="text-sm text-zinc-400">
+          Aucune version 1fichier
+          {seasonNumber !== null ? ` pour la saison ${seasonNumber}` : ''} sur {site.name}.
+        </p>
+      ) : (
+        <p className="flex max-w-2xl items-start gap-2 text-sm text-zinc-300">
+          <Globe className="mt-0.5 size-4 shrink-0 text-zinc-400" />
+          <span>
+            Choisissez une version
+            {seasonNumber !== null ? ', de préférence la saison complète,' : ''} : {site.name}{' '}
+            s’ouvre sur elle, vous la révélez avec votre compte, puis le lien revient dans Lumière.
+          </span>
+        </p>
+      )}
+      <ul className="flex flex-col gap-2">
+        {items.map((release) => (
+          <li
+            key={release.id}
+            className="flex flex-col gap-2 rounded-[0.9rem] bg-white/[0.05] p-3 sm:flex-row sm:items-center"
+          >
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-1.5">
+                {scopeLabel(release) && <Badge tone="violet">{scopeLabel(release)}</Badge>}
+                {release.quality && <Badge tone="brand">{release.quality}</Badge>}
+                {release.language && <Badge tone="info">{release.language}</Badge>}
+              </div>
+              {(release.name ?? release.group) && (
+                <p
+                  className="mt-1.5 truncate font-mono text-xs text-zinc-300"
+                  title={release.name ?? release.group ?? ''}
+                >
+                  {release.name ?? release.group}
+                </p>
+              )}
+              <p className="mt-0.5 text-xs text-zinc-500">
+                {[
+                  formatBytes(release.size),
+                  release.fileCount > 1 ? plural(release.fileCount, 'fichier') : null,
+                  release.addedAt ? `ajoutée ${formatRelativeDate(release.addedAt)}` : null,
+                ]
+                  .filter(Boolean)
+                  .join(' · ')}
+              </p>
+            </div>
+            <a
+              href={release.url}
+              target="_blank"
+              rel="noreferrer"
+              className={cn(buttonClasses({ variant: 'glass', size: 'sm' }), 'shrink-0')}
+              onClick={() => {
+                rememberPendingTitle({
+                  id: title.id,
+                  title: title.title,
+                  year: title.year,
+                  kind: title.kind,
+                  season: seasonNumber,
+                  source: site.name,
+                });
+                openSourceSearch({
+                  source: site.name,
+                  url: release.url,
+                  target,
+                  season: seasonNumber,
+                  release: describeRelease(release),
+                });
+              }}
+            >
+              <ExternalLink className="size-4" />
+              Révéler sur {site.name}
+            </a>
+          </li>
+        ))}
+      </ul>
+      <a
+        href={pageUrl}
+        target="_blank"
+        rel="noreferrer"
+        className="inline-flex items-center gap-1 self-start text-xs font-medium text-zinc-400 underline-offset-2 hover:text-zinc-200 hover:underline"
+      >
+        Toutes les versions sur {site.name}
+        <ExternalLink className="size-3" />
       </a>
     </div>
   );

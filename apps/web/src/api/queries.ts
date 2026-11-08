@@ -20,6 +20,7 @@ import type {
   HomeFeed,
   LibraryItem,
   LibraryScanResult,
+  LoadixReleases,
   MediaRef,
   OneFichierFileInfo,
   OneFichierLinkRequest,
@@ -114,6 +115,17 @@ export function useMovieVersions(titleId: number, enabled: boolean) {
     queryFn: () => api<EpisodeFiles>(`/titles/${titleId}/versions`),
     enabled,
     staleTime: 10 * 60_000,
+  });
+}
+
+/** Versions 1fichier d'un titre sur loadix.fun (d'une saison pour une série). */
+export function useLoadixReleases(titleId: number, season: number | null) {
+  return useQuery({
+    queryKey: ['title', titleId, 'loadix', season] as const,
+    queryFn: () =>
+      api<LoadixReleases>(`/titles/${titleId}/loadix`, { query: { season: season ?? undefined } }),
+    staleTime: 10 * 60_000,
+    retry: false,
   });
 }
 

@@ -14,6 +14,8 @@ export default defineConfig(
       'media/**',
       'coverage/**',
       'tools/demo-source/content/**',
+      // Environnement Python du test Scrapling (le navigateur piloté embarque du JavaScript).
+      '**/.venv/**',
     ],
   },
   js.configs.recommended,

@@ -6,3 +6,5 @@ coverage
 package-lock.json
 tools/demo-source/content
 apps/server/test/fixtures
+.venv
+tools/scrapling-test/sortie

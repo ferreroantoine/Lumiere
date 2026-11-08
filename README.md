@@ -118,8 +118,14 @@ ces services ; videz la liste des extensions et la clé pour n'en contacter aucu
 ### 6. Sites (loadix.fun…) et 1fichier premium (facultatif)
 
 Pour un site qui donne des liens 1fichier mais impose une vérification anti-robot (loadix.fun,
-par exemple), Lumière ne lit pas le site : c'est **vous** qui le consultez dans votre
-navigateur, et Lumière prend la main une fois le lien 1fichier obtenu.
+par exemple), c'est **vous** qui obtenez le lien dans votre navigateur, et Lumière prend la
+main une fois le lien 1fichier obtenu. Pour loadix.fun, Lumière liste en plus ses versions
+1fichier (API publique du site) : il ne reste qu'à révéler celle choisie, avec votre compte.
+
+Si votre box bloque le site (le navigateur affiche « connexion refusée », et
+`Resolve-DnsName loadix.fun` répond `127.0.0.1`), passez Windows sur un DNS chiffré :
+Paramètres → Réseau et Internet → Wi-Fi (ou Ethernet) → Propriétés du matériel → Attribution
+du serveur DNS → Manuel, `1.1.1.1` et `1.0.0.1` en « Chiffré uniquement (DNS sur HTTPS) ».
 
 1. **Paramètres → Sources → Sites** : ajoutez le site (nom et adresse). Le bouton **Ajouter loadix.fun** prépare sa recherche
    (`https://loadix.fun/search?q={titre}&type={type_en}`). Pour un autre site, faites une
@@ -139,10 +145,15 @@ navigateur, et Lumière prend la main une fois le lien 1fichier obtenu.
   - **Extensions Stremio** : « Meilleure version » ou « Choisir une version » pour un film ;
     « Toute la saison » ou « Épisode par épisode » pour une série (aussi pour regarder en
     streaming).
-  - **Un site** (loadix.fun…) : **Chercher sur …** ouvre le site sur la recherche du titre, et
-    une fenêtre de Lumière vous guide : passez la vérification, choisissez la version (la
-    saison complète pour une série), copiez le lien 1fichier, revenez et faites **Ctrl+V**. Le
-    favori **« Envoyer à Lumière »** évite le copier-coller.
+  - **loadix.fun** : ses versions 1fichier du film (ou de la saison : saisons complètes
+    d'abord) s'affichent avec leur qualité, langue et taille. **Révéler sur loadix.fun** ouvre
+    la page du titre sur la version choisie ; cliquez sur « Révéler » (compte loadix,
+    vérification anti-robot), copiez le lien 1fichier, revenez et faites **Ctrl+V**, ou
+    utilisez le favori.
+  - **Un autre site** : **Chercher sur …** ouvre le site sur la recherche du titre, et une
+    fenêtre de Lumière vous guide : passez la vérification, choisissez la version (la saison
+    complète pour une série), copiez le lien 1fichier, revenez et faites **Ctrl+V**. Le favori
+    **« Envoyer à Lumière »** évite le copier-coller.
 
 Lumière vérifie le lien (nom, taille), le rattache au film ou à la saison d'où vous êtes parti,
 puis le télécharge sur le serveur : lien direct demandé à l'API 1fichier, plusieurs morceaux en

@@ -11,6 +11,11 @@ export interface SourceSearch {
   target: string;
   /** Saison cherchée (série). */
   season: number | null;
+  /**
+   * Version choisie dans Lumière (« Saison complète · WEB 1080p · MULTi VFF · 22,4 Go ») :
+   * la page s'ouvre sur elle, il ne reste qu'à la révéler. Null : simple recherche.
+   */
+  release: string | null;
 }
 
 export interface DialogRequest {

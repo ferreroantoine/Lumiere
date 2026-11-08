@@ -47,6 +47,11 @@ export function customSourceUrl(source: CustomSource, title: TitleDetails): stri
 /** loadix.fun : sa page de recherche lit le titre (`q`) et le type (`movie` ou `series`). */
 export const LOADIX_SEARCH_URL = 'https://loadix.fun/search?q={titre}&type={type_en}';
 
+/** Source loadix.fun : ses versions sont listées dans Lumière (API publique du site). */
+export function isLoadixSource(source: CustomSource): boolean {
+  return /(^|[/.])loadix\.fun/i.test(source.searchUrl);
+}
+
 /** L'adresse contient-elle au moins un repère ({titre}…) ? Sinon le site s'ouvre tel quel. */
 export function hasMarkers(searchUrl: string): boolean {
   return /\{[a-z_]+\}/.test(searchUrl);
